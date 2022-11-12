@@ -3,9 +3,9 @@ import os
 import tarfile
 import shutil
 
-now = datetime.now()
-now_iso8601 = now.strftime('%Y-%m-%dT%H:%M:%S+00:00')
-print(now_iso8601)
+dry_run = True
+now_iso8601_ish = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
 '''
 TODO: When this code is done, it will literally only post data to a webhook to
 kick-off a server-side event. All downstream operations will be managed there.
@@ -94,53 +94,66 @@ Backup Destination metadata for
 '''
 
 class BackupDestination:
-  def init(self, file_path):
+  def __init__(self, file_path):
     self.filepath = file_path
+    # TODO read configuration file fomr this directory root?
 
-  def isAvailable(proposed_file_size):
+  def isAvailable(self, proposed_file_size):
     '''
     Checks condition of destination to ensure it can save the proposed number of bytes to disk.
     '''
+    # TODO
     return True
 
-
-number_of_backups = 12
-
-
 # TODO: Config
+number_of_backups = 12
 backup_cadence = 604800 # 7 days in seconds
 backup_targets=[
   '/Users/helior/Code/helior/memento/cms/db.sqlite3',
   '/Users/helior/Code/helior/memento/cms/media'
 ]
 
-backup_destination_1 = '/Users/helior/My Drive/backups'
+backup_destination_1 = '/Users/helior/My Drive/backups/'
 
 bd = BackupDestination(backup_destination_1)
+
+if dry_run:
+  exit()
+
+print('Begin backup for {}.'.format(now_iso8601_ish))
 
 # Sanity checks
 if not os.path.exists(backup_destination_1):
   os.makedirs(backup_destination_1)
 
 # Create gzip backup of targetted files
-tmp_archive_name = 'tmp-backup' + now_iso8601
-tar = tarfile.open(tmp_archive_name, 'w:gz')
+archive_name = now_iso8601_ish + '.tar.gz'
+tar = tarfile.open(archive_name, 'w:gz')
 for file_name in backup_targets:
   # TODO: Actually, don't pollute the log space
-  print('Adding %s...' % file_name)
+  print('\tAdding %s.' % file_name)
   tar.add(file_name, os.path.basename(file_name))
 tar.close()
 
 # Read file size
-backup_file_size = os.path.getsize(tmp_archive_name)
+backup_file_size = os.path.getsize(archive_name)
 
 # Check if backup can support incoming payload
 # Backup compares max hard-limit, max allowance, return if available
 if not bd.isAvailable(backup_file_size):
   # send notification that backups are blocked.
-  print('Backup destination is not available. Backup is cancelled.')
-
+  print('❌ Backup destination is not available. Backup is cancelled.')
 
 # copy command executes (formally)
+try:
+  shutil.move(archive_name, backup_destination_1)
+except shutil.SameFileError as err:
+  print(err)
+except shutil.SpecialFileError as err:
+  print(err)
+except PermissionError as err:
+  print(err)
+else:
+  print('\t✅ Successful backup of {}.'.format(archive_name))
+
 # log last updated time so cron job can evaluate later.
-)
