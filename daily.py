@@ -55,7 +55,8 @@ except configparser.NoOptionError as e:
   print(e)
   exit()
 
-elapsed_time = int(time.time() - last_updated)
+now = int(time.time())
+elapsed_time = now - last_updated
 threshold_difference = threshold - elapsed_time
 if threshold_difference > 0:
   print('❌ Threshold time for backup not met. {} seconds remaining.'.format(threshold_difference))
@@ -114,4 +115,11 @@ except TypeError as e:
 
 '''
 (3) Garbage Collection
+load all files in backup directory, represent as list of timestamps
+sort list
+split list according to retention time
+additional split list according to retention count
+
+remove files that are truncated from list
+log
 '''
