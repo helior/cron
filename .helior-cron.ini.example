@@ -1,0 +1,11 @@
+[daily]
+threshold_seconds = 86400 ;1 day
+retention_seconds = 604800 ;7 days
+files = /Users/helior/Code/cron/README.md, /Users/helior/Code/cron/LICENSE
+destination = /Users/helior/My Drive/backups/daily
+
+[weekly]
+threshold_seconds = 604800 ;1 week
+retention_seconds = 2419200 ;4 weeks
+files = /Users/helior/Code/cron/README.md, /Users/helior/Code/cron/LICENSE
+destination = /Users/helior/My Drive/backups/weekly
