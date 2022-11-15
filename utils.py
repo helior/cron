@@ -1,25 +1,33 @@
 from datetime import datetime
 import re
-def trim(str):
-  return str.strip()
 
-def get_list(str):
-  return list(map(trim, str.split(',')))
+def trim(string):
+  return string.strip()
 
-def filenametotimestamp(filename, truncate_ext=".tar.gz"):
-  filename = filename.rstrip(truncate_ext)
+
+def get_list(string):
+  return list(map(trim, string.split(',')))
+
+
+def filenametotimestamp(filename):
+  ext = '.tar.gz'
+  filename = filename.rstrip(ext)
   pattern = '^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$'
   # sample: 2022-03-18_14-20-02
-  
+
   match = re.findall(pattern, filename)
+
   if not match:
     return
-  
+
   year, month, day, hour, minute, second = match[0]
   dt = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
   return int(dt.timestamp())
 
+
 def timestamptofilename(ts):
-  # ex: 2022-03-18_14-20-02
+  ext = '.tar.gz'
   dt = datetime.fromtimestamp(ts)
-  return dt.strftime('%Y-%m-%d_%H-%M-%S')
+  filename = dt.strftime('%Y-%m-%d_%H-%M-%S')
+  # ex: 2022-03-18_14-20-02
+  return filename + ext
